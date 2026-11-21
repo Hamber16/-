@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hamber's Workout Tracker — Dumbbell & Calisthenics</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#09090b" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: {
+            surface: {
+              950: '#09090b',
+              900: '#121216',
+              850: '#18181f',
+              800: '#202029',
+              700: '#2d2d3a',
+            },
+            accent: {
+              DEFAULT: '#10b981',
+              hover: '#059669',
+              soft: 'rgba(16, 185, 129, 0.14)',
+            },
+            amberPulse: '#f59e0b',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    * { -webkit-tap-highlight-color: transparent; }
+  </style>
+</head>
+<body class="bg-surface-950 text-zinc-100 font-sans antialiased min-h-screen pb-32 selection:bg-emerald-500/30 selection:text-emerald-200">
+
+  <header class="sticky top-0 z-30 bg-surface-950/90 backdrop-blur-md border-b border-zinc-800/80">
+    <div class="max-w-2xl mx-auto px-4 pt-4 pb-3">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11" />
+              </svg>
+            </span>
+            <h1 class="text-lg sm:text-xl font-extrabold tracking-tight text-white">Hamber's Training</h1>
+          </div>
+          <p class="text-xs text-zinc-400 mt-0.5">Dumbbell Strength • HSPU & Core Split</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <div class="bg-surface-850 border border-zinc-800 rounded-xl px-3 py-1.5 text-right">
+            <div class="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">Week Done</div>
+            <div id="weekly-summary-text" class="text-xs sm:text-sm font-bold text-emerald-400">0 / 7 Days</div>
+          </div>
+          <button
+            id="btn-open-settings"
+            aria-label="Reset options"
+            class="p-2.5 rounded-xl bg-surface-850 hover:bg-surface-800 border border-zinc-800 text-zinc-300 transition active:scale-95"
+            title="Reset Progress"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <nav aria-label="Workout Days" class="mt-3 -mx-4 px-4 overflow-x-auto no-scrollbar">
+        <div id="day-tabs" class="flex items-center gap-2 min-w-max pb-1"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-2xl mx-auto px-4 pt-5 space-y-5">
+    <section class="bg-surface-900 border border-zinc-800/90 rounded-2xl p-4 sm:p-5 shadow-lg">
+      <div class="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="day-badge" class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              Day 1
+            </span>
+            <span id="day-focus-tag" class="text-xs text-zinc-400 font-medium"></span>
+          </div>
+          <h2 id="day-title" class="text-xl sm:text-2xl font-extrabold text-white mt-1.5"></h2>
+          <p id="day-subtitle" class="text-xs sm:text-sm text-zinc-400 mt-1"></p>
+        </div>
+
+        <button
+          id="btn-complete-day"
+          class="px-3.5 py-2 rounded-xl text-xs font-bold border transition active:scale-95 flex items-center gap-1.5"
+        >
+          <span id="complete-day-icon">○</span>
+          <span id="complete-day-label">Mark Day Done</span>
+        </button>
+      </div>
+
+      <div class="mt-4">
+        <div class="flex items-center justify-between text-xs mb-1.5">
+          <span class="text-zinc-400 font-medium">Session Sets Completed</span>
+          <span id="day-progress-text" class="font-bold text-emerald-400">0 / 0 sets</span>
+        </div>
+        <div class="w-full h-2.5 bg-surface-800 rounded-full overflow-hidden">
+          <div id="day-progress-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="exercise-list" class="space-y-3.5"></section>
+  </main>
+
+  <div class="fixed bottom-0 inset-x-0 z-30 bg-surface-900/95 backdrop-blur-md border-t border-zinc-800">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <div class="text-[10px] uppercase tracking-wider text-zinc-400 font-semibold">Rest Timer</div>
+        <div class="flex items-baseline gap-2">
+          <span id="timer-display" class="text-2xl font-extrabold tabular-nums text-white">01:30</span>
+          <span id="timer-status" class="text-xs text-zinc-400 truncate">Ready</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <button data-preset="60" class="timer-preset px-2.5 py-1.5 rounded-lg text-xs font-bold bg-surface-800 hover:bg-surface-700 text-zinc-200 border border-zinc-700/70 transition active:scale-95">60s</button>
+        <button data-preset="90" class="timer-preset px-2.5 py-1.5 rounded-lg text-xs font-bold bg-surface-800 hover:bg-surface-700 text-zinc-200 border border-zinc-700/70 transition active:scale-95">90s</button>
+        <button data-preset="120" class="timer-preset px-2.5 py-1.5 rounded-lg text-xs font-bold bg-surface-800 hover:bg-surface-700 text-zinc-200 border border-zinc-700/70 transition active:scale-95">2m</button>
+        <button id="btn-timer-toggle" class="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-emerald-500 hover:bg-emerald-600 text-zinc-950 transition active:scale-95">Start</button>
+        <button id="btn-timer-reset" aria-label="Reset timer" class="p-2 rounded-xl bg-surface-800 hover:bg-surface-700 text-zinc-300 border border-zinc-700/70 transition active:scale-95">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="reset-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/75 backdrop-blur-xs p-4">
+    <div class="bg-surface-900 border border-zinc-800 rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl">
+      <div>
+        <h3 class="text-base font-extrabold text-white">Reset Workout Progress</h3>
+        <p class="text-xs text-zinc-400 mt-1">Choose what you want to clear. Your logged weights and notes stay safe unless you reset everything.</p>
+      </div>
+      <div class="space-y-2">
+        <button id="btn-reset-day" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-surface-800 hover:bg-surface-700 text-zinc-100 border border-zinc-700 text-left transition">
+          Reset Current Day Sets & Status
+        </button>
+        <button id="btn-reset-week" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-left transition">
+          Reset Entire Week Checkmarks
+        </button>
+        <button id="btn-reset-all" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-rose-500/15 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 text-left transition">
+          Factory Reset (Clear All Logs & Notes)
+        </button>
+      </div>
+      <button id="btn-close-modal" class="w-full py-2 rounded-xl text-xs font-semibold text-zinc-400 hover:text-white bg-surface-850 transition">
+        Cancel
+      </button>
+    </div>
+  </div>
+  <script>
+    const WORKOUT_DAYS = [
+      {
+        id: 'day1',
+        shortLabel: 'Day 1',
+        tag: 'Push • DB & HSPU',
+        title: 'Push Strength & Handstand Press',
+        subtitle: 'Dumbbell pressing mechanics, pike/HSPU progressions, and triceps lockouts.',
+        exercises: [
+          { id: 'd1e1', name: 'Dumbbell Floor / Bench Press', sets: 4, target: '8–12 reps', rest: 90, cue: 'Elbows ~45° tucked, control the negative for 2 seconds.' },
+          { id: 'd1e2', name: 'Pike Push-Ups / Wall HSPU', sets: 4, target: '6–10 reps', rest: 90, cue: 'Hips high, lower head slightly in front of hands.' },
+          { id: 'd1e3', name: 'Seated Dumbbell Overhead Press', sets: 3, target: '10–12 reps', rest: 75, cue: 'Ribs stacked over pelvis; press slightly back overhead.' },
+          { id: 'd1e4', name: 'Dumbbell Lateral Raises', sets: 3, target: '12–15 reps', rest: 60, cue: 'Lead with elbows, stop just below shoulder height.' },
+          { id: 'd1e5', name: 'Overhead DB Triceps Extension', sets: 3, target: '12–15 reps', rest: 60, cue: 'Keep upper arms steady while extending smoothly.' }
+        ]
+      },
+      {
+        id: 'day2',
+        shortLabel: 'Day 2',
+        tag: 'Pull • Back & Biceps',
+        title: 'Pull Strength & Posture Control',
+        subtitle: 'Unilateral row volume, rear-delt stability, and strict arm pulls.',
+        exercises: [
+          { id: 'd2e1', name: 'Single-Arm Dumbbell Row', sets: 4, target: '10–12 / side', rest: 75, cue: 'Brace core, pull elbow toward hip pocket without twisting.' },
+          { id: 'd2e2', name: 'Chest-Supported / Bent-Over DB Row', sets: 3, target: '10–12 reps', rest: 75, cue: 'Squeeze shoulder blades together at the top for 1 second.' },
+          { id: 'd2e3', name: 'Dumbbell Rear Delt Flyes', sets: 3, target: '15 reps', rest: 60, cue: 'Hinge at hips, soft elbow bend, sweep out and back.' },
+          { id: 'd2e4', name: 'Alternating Dumbbell Biceps Curl', sets: 3, target: '10–14 reps', rest: 60, cue: 'No hip swing; full stretch at bottom and peak squeeze.' },
+          { id: 'd2e5', name: 'Dumbbell Hammer Curl', sets: 3, target: '12–15 reps', rest: 60, cue: 'Neutral grip to target brachioradialis and forearm strength.' }
+        ]
+      },
+      {
+        id: 'day3',
+        shortLabel: 'Day 3',
+        tag: 'Legs • Quad & Glute',
+        title: 'Lower Body Strength & Balance',
+        subtitle: 'Single-leg stability and controlled squat depth.',
+        exercises: [
+          { id: 'd3e1', name: 'Goblet / Front Dumbbell Squat', sets: 4, target: '8–12 reps', rest: 90, cue: 'Chest proud, knees track over toes, drive through mid-foot.' },
+          { id: 'd3e2', name: 'Bulgarian Split Squat (DB)', sets: 3, target: '8–10 / leg', rest: 90, cue: 'Slight forward torso lean to emphasize glutes and quads.' },
+          { id: 'd3e3', name: 'Reverse Lunges (DB)', sets: 3, target: '10 / leg', rest: 75, cue: 'Step back smoothly under control; keep front shin vertical.' },
+          { id: 'd3e4', name: 'Dumbbell Glute Bridge / Hip Thrust', sets: 3, target: '12–15 reps', rest: 60, cue: 'Tuck pelvis slightly at top; avoid lower-back arch.' },
+          { id: 'd3e5', name: 'Wall Sit Hold', sets: 3, target: '30–45 sec', rest: 60, cue: 'Back flat against wall, thighs parallel to floor.' }
+        ]
+      },
+      {
+        id: 'day4',
+        shortLabel: 'Day 4',
+        tag: 'Core & Balance',
+        title: 'Midline Stability & Handstand Prep',
+        subtitle: 'Anti-extension core tension, hollow body control, and wrist/shoulder balance.',
+        exercises: [
+          { id: 'd4e1', name: 'Hollow Body Hold', sets: 4, target: '20–35 sec', rest: 60, cue: 'Lower back pressed firmly into floor; shoulders lifted.' },
+          { id: 'd4e2', name: 'Hanging / Lying Leg Raises', sets: 3, target: '10–15 reps', rest: 60, cue: 'Raise legs under control without momentum.' },
+          { id: 'd4e3', name: 'Weighted / Plank Dumbbell Drag', sets: 3, target: '12 drags', rest: 60, cue: 'Keep hips square and glutes tight as you pull DB across.' },
+          { id: 'd4e4', name: 'Wall Chest-to-Wall / Kick-Up Hold', sets: 4, target: '20–40 sec', rest: 75, cue: 'Push tall through shoulders; squeeze glutes and abs.' },
+          { id: 'd4e5', name: 'Side Plank', sets: 3, target: '25–40 sec / side', rest: 45, cue: 'Straight line from ear to ankle; don’t let hips sag.' }
+        ]
+      },
+      {
+        id: 'day5',
+        shortLabel: 'Day 5',
+        tag: 'Upper • Press & Pull',
+        title: 'Upper Body Volume & HSPU Progression',
+        subtitle: 'Higher-rep hypertrophy and stricter handstand push-up depth work.',
+        exercises: [
+          { id: 'd5e1', name: 'Handstand Push-Up Negatives / Reps', sets: 4, target: '5–8 reps', rest: 90, cue: '3-second descent if working negatives; stay tight.' },
+          { id: 'd5e2', name: 'Incline / Elevated Push-Ups', sets: 3, target: '12–20 reps', rest: 60, cue: 'Full range of motion with scapular protraction at top.' },
+          { id: 'd5e3', name: 'Dumbbell Pullover', sets: 3, target: '12–15 reps', rest: 60, cue: 'Deep stretch over head while keeping ribs tucked.' },
+          { id: 'd5e4', name: 'Dumbbell Shrugs (Controlled)', sets: 3, target: '12–15 reps', rest: 60, cue: 'Elevate straight up without rolling shoulders.' },
+          { id: 'd5e5', name: 'Superset: Curl + Kickback', sets: 3, target: '12 reps each', rest: 60, cue: 'Smooth tempo with zero momentum.' }
+        ]
+      },
+      {
+        id: 'day6',
+        shortLabel: 'Day 6',
+        tag: 'Posterior & Conditioning',
+        title: 'Posterior Chain & Athletic Conditioning',
+        subtitle: 'Hamstring hinges, athletic bursts, and brisk metabolic work.',
+        exercises: [
+          { id: 'd6e1', name: 'Dumbbell Romanian Deadlift (RDL)', sets: 4, target: '10–12 reps', rest: 90, cue: 'Push hips back until hamstring stretch; keep back flat.' },
+          { id: 'd6e2', name: 'Single-Leg DB RDL', sets: 3, target: '8–10 / leg', rest: 75, cue: 'Square hips to floor; move slowly for balance.' },
+          { id: 'd6e3', name: 'Dumbbell Swings / Squat Thrusters', sets: 4, target: '12–15 reps', rest: 75, cue: 'Snap hips forward powerfully on each rep.' },
+          { id: 'd6e4', name: 'Mountain Climbers', sets: 3, target: '30–40 sec', rest: 45, cue: 'Hands under shoulders, steady rhythm, core braced.' },
+          { id: 'd6e5', name: 'Farmer’s Carry (Heavy DBs)', sets: 3, target: '30–45 sec walk', rest: 60, cue: 'Tall posture, packed shoulders, brisk controlled steps.' }
+        ]
+      },
+      {
+        id: 'day7',
+        shortLabel: 'Day 7',
+        tag: 'Mobility & Recovery',
+        title: 'Active Recovery, Mobility & Core Flow',
+        subtitle: 'Joint decompression, shoulder/hip mobility, and light core restoration.',
+        exercises: [
+          { id: 'd7e1', name: 'Wrist, Shoulder & Thoracic Flow', sets: 2, target: '5 min flow', rest: 30, cue: 'Gentle circles and openers; never force sharp pain.' },
+          { id: 'd7e2', name: 'Deep Squat / Hip Opener Hold', sets: 3, target: '30–45 sec', rest: 30, cue: 'Breathe slowly into tight hips and lower back.' },
+          { id: 'd7e3', name: 'Dead Bug (Slow Tempo)', sets: 3, target: '8–10 / side', rest: 45, cue: 'Exhale as opposite arm and leg extend without arching back.' },
+          { id: 'd7e4', name: 'Cat-Cow & Child’s Pose Stretch', sets: 2, target: '45–60 sec', rest: 30, cue: 'Relax spine and latissimus dorsi between breaths.' }
+        ]
+      }
+    ];
+
+    const STORAGE_KEY = 'hamber_workout_tracker_v1';
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return { activeDayId: 'day1', completedDays: {}, sets: {}, weights: {}, notes: {} };
+        const parsed = JSON.parse(raw);
+        return {
+          activeDayId: parsed.activeDayId || 'day1',
+          completedDays: parsed.completedDays || {},
+          sets: parsed.sets || {},
+          weights: parsed.weights || {},
+          notes: parsed.notes || {}
+        };
+      } catch {
+        return { activeDayId: 'day1', completedDays: {}, sets: {}, weights: {}, notes: {} };
+      }
+    }
+
+    let state = loadState();
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+
+    function getActiveDay() {
+      return WORKOUT_DAYS.find((d) => d.id === state.activeDayId) || WORKOUT_DAYS[0];
+    }
+
+    function renderDayTabs() {
+      const container = document.getElementById('day-tabs');
+      container.innerHTML = WORKOUT_DAYS.map((day) => {
+        const isActive = day.id === state.activeDayId;
+        const isDone = !!state.completedDays[day.id];
+        return `
+          <button
+            data-day-id="${day.id}"
+            class="day-tab shrink-0 px-3.5 py-2 rounded-xl text-xs font-bold border transition active:scale-95 flex items-center gap-1.5 ${
+              isActive
+                ? 'bg-emerald-500 text-zinc-950 border-emerald-400 shadow-sm'
+                : 'bg-surface-850 text-zinc-300 border-zinc-800 hover:bg-surface-800'
+            }"
+          >
+            <span>${day.shortLabel}</span>
+            ${isDone ? `<span class="${isActive ? 'text-zinc-950' : 'text-emerald-400'}">✓</span>` : ''}
+          </button>
+        `;
+      }).join('');
+
+      container.querySelectorAll('.day-tab').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          state.activeDayId = btn.dataset.dayId;
+          saveState();
+          renderAll();
+        });
+      });
+    }
+
+    function renderHeaderSummary() {
+      const doneCount = WORKOUT_DAYS.filter((d) => !!state.completedDays[d.id]).length;
+      document.getElementById('weekly-summary-text').textContent = `${doneCount} / 7 Days`;
+    }
+
+    function renderActiveDay() {
+      const day = getActiveDay();
+      const isDone = !!state.completedDays[day.id];
+
+      document.getElementById('day-badge').textContent = day.shortLabel;
+      document.getElementById('day-focus-tag').textContent = day.tag;
+      document.getElementById('day-title').textContent = day.title;
+      document.getElementById('day-subtitle').textContent = day.subtitle;
+
+      const btnDone = document.getElementById('btn-complete-day');
+      const iconDone = document.getElementById('complete-day-icon');
+      const labelDone = document.getElementById('complete-day-label');
+
+      if (isDone) {
+        btnDone.className = 'px-3.5 py-2 rounded-xl text-xs font-bold border transition active:scale-95 flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border-emerald-500/40';
+        iconDone.textContent = '✓';
+        labelDone.textContent = 'Day Completed';
+      } else {
+        btnDone.className = 'px-3.5 py-2 rounded-xl text-xs font-bold border transition active:scale-95 flex items-center gap-1.5 bg-surface-850 hover:bg-surface-800 text-zinc-200 border-zinc-700';
+        iconDone.textContent = '○';
+        labelDone.textContent = 'Mark Day Done';
+      }
+
+      let totalSets = 0;
+      let completedSets = 0;
+
+      const listEl = document.getElementById('exercise-list');
+      listEl.innerHTML = day.exercises.map((ex, idx) => {
+        totalSets += ex.sets;
+        const exSets = state.sets[ex.id] || [];
+        const exDoneCount = exSets.filter(Boolean).length;
+        completedSets += exDoneCount;
+        const weightVal = state.weights[ex.id] || '';
+        const noteVal = state.notes[ex.id] || '';
+
+        const setButtons = Array.from({ length: ex.sets }, (_, sIdx) => {
+          const checked = !!exSets[sIdx];
+          return `
+            <button
+              data-ex-id="${ex.id}"
+              data-set-idx="${sIdx}"
+              data-rest="${ex.rest}"
+              class="set-btn h-10 rounded-xl text-xs font-extrabold border transition active:scale-95 ${
+                checked
+                  ? 'bg-emerald-500 text-zinc-950 border-emerald-400'
+                  : 'bg-surface-850 text-zinc-300 border-zinc-700/80 hover:bg-surface-800'
+              }"
+            >
+              S${sIdx + 1} ${checked ? '✓' : ''}
+            </button>
+          `;
+        }).join('');
+
+        return `
+          <article class="bg-surface-900 border border-zinc-800/90 rounded-2xl p-4 space-y-3.5">
+            <div class="flex items-start justify-between gap-2">
+              <div>
+                <div class="text-[11px] font-bold text-emerald-400 uppercase tracking-wider">
+                  Exercise ${idx + 1} • ${ex.sets} Sets × ${ex.target}
+                </div>
+                <h3 class="text-base font-bold text-white mt-0.5">${ex.name}</h3>
+              </div>
+              <button
+                data-start-rest="${ex.rest}"
+                class="start-rest-btn shrink-0 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-surface-850 hover:bg-surface-800 text-amber-300 border border-amber-500/25 transition active:scale-95"
+              >
+                ${ex.rest}s Rest
+              </button>
+            </div>
+
+            <p class="text-xs text-zinc-400 leading-relaxed">${ex.cue}</p>
+
+            <div class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+              ${setButtons}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              <input
+                type="text"
+                data-weight-id="${ex.id}"
+                value="${weightVal.replace(/"/g, '&quot;')}"
+                placeholder="Load / weight (e.g. 15kg DBs, BW)"
+                class="weight-input w-full px-3 py-2 rounded-xl text-xs bg-surface-850 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500"
+              />
+              <input
+                type="text"
+                data-note-id="${ex.id}"
+                value="${noteVal.replace(/"/g, '&quot;')}"
+                placeholder="Notes / reps achieved..."
+                class="note-input w-full px-3 py-2 rounded-xl text-xs bg-surface-850 border border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-emerald-500"
+              />
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      const pct = totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
+      document.getElementById('day-progress-text').textContent = `${completedSets} / ${totalSets} sets (${pct}%)`;
+      document.getElementById('day-progress-bar').style.width = `${pct}%`;
+
+      listEl.querySelectorAll('.set-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const exId = btn.dataset.exId;
+          const sIdx = Number(btn.dataset.setIdx);
+          const restSec = Number(btn.dataset.rest) || 90;
+          if (!state.sets[exId]) state.sets[exId] = [];
+          const nextVal = !state.sets[exId][sIdx];
+          state.sets[exId][sIdx] = nextVal;
+          saveState();
+          renderActiveDay();
+          if (nextVal) startTimer(restSec);
+        });
+      });
+
+      listEl.querySelectorAll('.start-rest-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          startTimer(Number(btn.dataset.startRest) || 90);
+        });
+      });
+
+      listEl.querySelectorAll('.weight-input').forEach((input) => {
+        input.addEventListener('input', (e) => {
+          state.weights[e.target.dataset.weightId] = e.target.value;
+          saveState();
+        });
+      });
+
+      listEl.querySelectorAll('.note-input').forEach((input) => {
+        input.addEventListener('input', (e) => {
+          state.notes[e.target.dataset.noteId] = e.target.value;
+          saveState();
+        });
+      });
+    }
+
+    let timerRemaining = 90;
+    let timerInterval = null;
+
+    function formatTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    function updateTimerUI(statusText) {
+      document.getElementById('timer-display').textContent = formatTime(timerRemaining);
+      if (statusText) document.getElementById('timer-status').textContent = statusText;
+    }
+
+    function stopTimer(statusText = 'Paused') {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+      document.getElementById('btn-timer-toggle').textContent = 'Start';
+      updateTimerUI(statusText);
+    }
+
+    function startTimer(seconds) {
+      if (typeof seconds === 'number') {
+        timerRemaining = seconds;
+      } else if (timerRemaining <= 0) {
+        timerRemaining = 90;
+      }
+      if (timerInterval) clearInterval(timerInterval);
+      document.getElementById('btn-timer-toggle').textContent = 'Pause';
+      updateTimerUI('Resting...');
+
+      timerInterval = setInterval(() => {
+        timerRemaining -= 1;
+        if (timerRemaining <= 0) {
+          timerRemaining = 0;
+          updateTimerUI('Rest complete!');
+          stopTimer('Rest complete!');
+          if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+          return;
+        }
+        updateTimerUI('Resting...');
+      }, 1000);
+    }
+
+    document.querySelectorAll('.timer-preset').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        stopTimer('Ready');
+        timerRemaining = Number(btn.dataset.preset) || 90;
+        updateTimerUI('Ready');
+      });
+    });
+
+    document.getElementById('btn-timer-toggle').addEventListener('click', () => {
+      if (timerInterval) {
+        stopTimer('Paused');
+      } else {
+        startTimer();
+      }
+    });
+
+    document.getElementById('btn-timer-reset').addEventListener('click', () => {
+      stopTimer('Ready');
+      timerRemaining = 90;
+      updateTimerUI('Ready');
+    });
+
+    document.getElementById('btn-complete-day').addEventListener('click', () => {
+      const day = getActiveDay();
+      state.completedDays[day.id] = !state.completedDays[day.id];
+      saveState();
+      renderHeaderSummary();
+      renderDayTabs();
+      renderActiveDay();
+    });
+
+    const modal = document.getElementById('reset-modal');
+    document.getElementById('btn-open-settings').addEventListener('click', () => {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    });
+    document.getElementById('btn-close-modal').addEventListener('click', () => {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+
+    document.getElementById('btn-reset-day').addEventListener('click', () => {
+      const day = getActiveDay();
+      delete state.completedDays[day.id];
+      day.exercises.forEach((ex) => {
+        delete state.sets[ex.id];
+      });
+      saveState();
+      renderAll();
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+
+    document.getElementById('btn-reset-week').addEventListener('click', () => {
+      state.completedDays = {};
+      state.sets = {};
+      saveState();
+      renderAll();
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+
+    document.getElementById('btn-reset-all').addEventListener('click', () => {
+      localStorage.removeItem(STORAGE_KEY);
+      state = loadState();
+      renderAll();
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    });
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      });
+    }
+
+    function renderAll() {
+      renderHeaderSummary();
+      renderDayTabs();
+      renderActiveDay();
+      updateTimerUI();
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
